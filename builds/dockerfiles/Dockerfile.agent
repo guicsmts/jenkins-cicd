@@ -1,0 +1,47 @@
+FROM ubuntu:24.04
+
+# Atualizações e instalação de pacotes necessários
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+    vim \
+    curl \
+    adduser \
+    sudo \
+    python3 \
+    python3-pip \
+    python3-venv \
+    ssh \
+    net-tools \
+    git \
+    openjdk-21-jdk \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Definindo variáveis de ambiente para Java
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+ENV PATH=$JAVA_HOME/bin:$PATH
+
+# Criação de um ambiente virtual Python e instalação do clair-client
+# RUN /root/clair-env/bin/pip3 install clair-cli
+WORKDIR /root/
+RUN python3 -m venv clair-env
+
+# Configurações do SSH
+RUN mv /etc/ssh/sshd_config /etc/ssh/sshd_config.default
+RUN rm -f /root/.ssh/*
+
+# Criando o diretório .ssh e gerando a chave SSH de forma automatizada
+RUN ssh-keygen -t rsa -b 4096 -f /root/.ssh/id_rsa -N "" 
+RUN chmod 600 /root/.ssh/id_rsa
+RUN chmod 644 /root/.ssh/id_rsa.pub
+
+# Copia o script de inicialização
+WORKDIR /
+
+#COPY entrypoints/agent-start.sh /docker-entrypoint.d/
+#RUN chmod +x /docker-entrypoint.d/agent-start.sh
+
+# Expondo a porta do SSH
+EXPOSE 22
+
+# Comando para iniciar o serviço SSH e manter o container em execução
+CMD service ssh start && /bin/bash

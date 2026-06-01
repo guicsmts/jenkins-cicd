@@ -1,0 +1,15 @@
+# PostgreSQL images Database
+FROM postgres:13
+
+
+# Configuração segurança banco postgresql
+ENV POSTGRES_DB sonar
+ENV POSTGRES_USER sonar
+ENV POSTGRES_PASSWORD sonar
+
+# Copie scripts de inicialização customizados se necessário para /docker-entrypoint-initdb.d/ (Opcional)
+# COPY ./init-db.sql /docker-entrypoint-initdb.d/
+
+# Porta exposta para o container postgres
+EXPOSE 5432
+

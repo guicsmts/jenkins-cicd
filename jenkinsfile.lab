@@ -1,0 +1,117 @@
+/* groovylint-disable DuplicateStringLiteral, LineLength */
+/* groovylint-disable-next-line CompileStatic */
+pipeline {
+    agent any
+
+    // Variaveis de ambiente - Integracoes Jenkinsfile
+    environment {
+        // Step 01
+        // Configuracoes Pipeline Jenkins
+        // Variaveis Projetos Pipeline Jenkins 
+        APP_NAME = "Google-2fa"
+        // Defina pasta para analises SonarQube
+        APP_PATH = "./sites/google2fa/"
+        // Defina volume para analises Trivy scanner
+        APP_PATH_TRIVY = "/home/ubuntu/laboratorio"
+        // Variaveis de versionamento
+        BUILD_VERSION = "${env.BUILD_NUMBER}"
+        // Integracoes GitHub Jenkins SSH Repositorio
+        GIT_SSH = "jenkins-github"
+        // Certifique-se de que o PATH inclui o diretório Docker Linux
+        PATH = "/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
+    }
+
+    stages {
+        stage ('CI - Clonar o Repositorio') {
+            // Clone do projeto
+            steps {
+                script {
+                    sh('ls -la')
+                }
+                git credentialsId: "${GIT_SSH}",
+                url: 'git@gitlab.com:organization5053650/lemp-stack.git',
+                branch: 'main'
+            }
+        }
+
+        stage ('SCA - Dependency Check Scan') {
+            steps {
+                /* groovylint-disable-next-line GStringExpressionWithinString */
+                dependencyCheck additionalArguments: 'scan="${WORKSPACE}" --format ALL',
+                    odcInstallation: 'dependency-check'
+            }
+        }
+
+        stage ('SCA - Dependency Check Publish Report') {
+            steps {
+                /* groovylint-disable-next-line NglParseError */
+                dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+            }
+        }
+
+        stage ('SAST - Escaneamento com SonarQube') {
+            environment {
+                // Scanners SonarQube - Jenkins Integration
+                scanner = tool 'sonar_scanner'
+            }
+            steps {
+                withSonarQubeEnv('sonar_scanner') {
+                    /* groovylint-disable-next-line GStringExpressionWithinString */
+                    sh "${scanner}/bin/sonar-scanner -Dsonar.projectKey=${APP_NAME} -Dsonar.sources=${WORKSPACE} -Dsonar.projectVersion=${BUILD_VERSION} -Dsonar.dependencyCheck.jsonReportPath=dependency-check-report/dependency-check-report.json -Dsonar.dependencyCheck.xmlReportPath=dependency-check-report/dependency-check-report.xml -Dsonar.dependencyCheck.htmlReportPath=dependency-check-report/dependency-check-report.html"
+                }
+            }
+        }
+
+        stage ('Trivy - Integridade Imagens Docker') {
+            steps {
+                script {
+                    // Cria o diretório para armazenar os relatórios
+                    sh 'mkdir -p /home/ubuntu/trivy-reports'
+
+                    // Executa o Trivy dentro do contêiner em execução usando o nome do contêiner
+                    sh """
+                        docker exec trivy /usr/bin/trivy fs \
+                        --scanners vuln,misconfig,secret,license \
+                        ${APP_PATH_TRIVY} > /home/ubuntu/trivy-reports/report-table.txt
+                    """
+                    // Verifica o conteúdo do relatório
+                    def reportContent = readFile('/home/ubuntu/trivy-reports/report-table.txt')
+
+                    // Define a etapa como instável se vulnerabilidades forem encontradas
+                    if (reportContent.contains('VULNERABILITY') || reportContent.contains('MISCONFIGURATION') || reportContent.contains('SECRET') || reportContent.contains('LICENSE')) {
+                        currentBuild.result = 'UNSTABLE'
+                        echo 'Vulnerabilidades encontradas. Marcando a etapa como instável.'
+                        unstable('Vulnerabilities found')
+                    } else {
+                        echo 'Nenhuma vulnerabilidade encontrada.'
+                    }
+
+                    // Exibe o conteúdo do relatório para depuração
+                    sh "cat /home/ubuntu/trivy-reports/report-table.txt"
+                }
+            }
+        }
+
+        stage ('Scanner de Vulnerabilidades - owaspzap') {
+            steps {
+                script {
+                    // Executando scanner de vulnerabilidade
+                    sh 'docker exec owaspzap nmap localhost'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            chuckNorris()
+        }
+        success {
+            // Codicao de sucesso pipeline
+            echo "Pipeline executada com sucesso!"
+        }
+        failure {
+            // Condicao de falha pipeline
+            echo "Pipeline falhou!"
+        }
+    }
+}

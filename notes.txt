@@ -1,0 +1,23 @@
+# Passos treinamentos
+
+1 - Instalação do Jenkins 
+2 - Configuracoes SSH Gitlab
+3 - Configurações Jenkinsfile
+4 - Abordagem SAST 
+5 - Abordagem SonarQube
+6 - Integracao webhook sonar para o Jenkins
+7 - Criacao token sonar
+8 - Instalação dos plugins Dependency-Check / Findbugs
+
+
+
+
+
+# Anotacoes Dicas
+
+1 - Testes Automatizados Implementacao SonarQube Pipelines Jenkins
+2 - Testes Automatizados Plugin SonarLint - Ides Desenvolvedores 
+3 - Testes Automatizados DevSkin - Ides Desenvolvedores 
+4 - Plugins Jenkins - Build Pipeline / SonarQube Scanner / Sonar Quality Gates / Owasp Dependency
+5 - Plugins Sonar SAST - Dependency-CheckINTEGRATION / FindbugsEXTERNAL ANALYSERS
+6 - Instalacao Scaner VA - Clair Docker / 

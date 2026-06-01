@@ -1,0 +1,26 @@
+FROM ubuntu:18.04
+
+# Instale pacotes necessários
+RUN apt-get update && apt-get install -y \
+    nginx \
+    php7.2-fpm \
+    php7.2-mysql \
+    curl \
+    unzip \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
+
+# Baixe e instale o WordPress vulnerável
+RUN curl -o /tmp/wordpress.zip https://wordpress.org/wordpress-4.8.zip \
+    && unzip /tmp/wordpress.zip -d /tmp \
+    && mv /tmp/wordpress/* /var/www/html \
+    && rm -rf /tmp/wordpress*
+
+# Ajuste permissões
+RUN chown -R www-data:www-data /var/www/html
+
+# Exponha a porta 80
+EXPOSE 80
+
+# Inicie o serviço PHP-FPM
+CMD ["php-fpm7.2", "-F"]

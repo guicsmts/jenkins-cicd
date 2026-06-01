@@ -1,0 +1,42 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+# Arquivos de ícone
+Icon
+# Arquivos de recurso do Finder
+._*
+.Spotlight-V100
+.Trashes
+# Arquivos ocultos do macOS
+.DS_Store
+.DS_Store?
+.AppleDouble
+.LSOverride
+# Outros arquivos ocultos do macOS
+.DC_*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+# Arquivos de log do Windows
+*.log
+
+# Linux
+*~
+# Arquivos de log do Linux
+*.log
+
+# Diretórios específicos do projeto
+volumes/
+volume/
+
+# Ignorar arquivos de log
+*.log
+
+# Ignorar arquivos temporários
+*.tmp
+*.temp
+

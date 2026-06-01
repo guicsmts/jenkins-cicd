@@ -1,0 +1,8 @@
+# SonarQube Oficial Images
+FROM sonarqube:9.9-community
+
+# Porta serviço Sonarqube
+EXPOSE 9000
+
+# Mantenha o contêiner em execução
+CMD ["bash"]

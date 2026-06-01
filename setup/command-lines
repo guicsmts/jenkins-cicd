@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# 0. Criando a Rede Personalizada
+docker network create --driver bridge --subnet 172.18.0.0/16 pipeline
+
+# 1. Jenkins
+docker build -t jenkins -f ./builds/dockerfiles/Dockerfile.jenkins ./builds/dockerfiles 
+
+docker run -it -d --name jenkins --network pipeline --ip 172.18.0.4 -p 8090:8080 -p 50000:50000 -v ./volumes/jenkins-data:/var/jenkins_home:rw -v /var/run/docker.sock:/var/run/docker.sock jenkins
+
+# 2. PostgreSQL
+docker build -t postgres:13 -f ./builds/dockerfiles/Dockerfile.postgres ./builds/dockerfiles 
+
+docker run -it -d --name postgres --network pipeline --ip 172.18.0.6 -e POSTGRES_DB=sonar -e POSTGRES_USER=sonar -e POSTGRES_PASSWORD=sonar -e POSTGRES_ROOT_PASSWORD=Snar2024 -p 5432:5432 -v ./volumes/db-sonar:/var/lib/postgresql/data postgres:13
+
+# 3. SONAR Cube
+docker build -t sonarqube -f ./builds/dockerfiles/Dockerfile.sonar ./builds/dockerfiles
+
+docker run -it -d --name sonar -p 9000:9000 -v ./volumes/sonarqube/logs:/opt/sonarqube/logs -v ./volumes/sonarqube/extensions:/opt/sonarqube/extensions --network pipeline --ip 172.18.0.5 -e SONAR_JDBC_URL=jdbc:postgresql://172.18.0.6:5432/sonar -e SONAR_JDBC_USERNAME=sonar -e SONAR_JDBC_PASSWORD=sonar sonarqube:9.9-community
+
+# 4. OWASP ZAP
+docker build -t owaspzap -f ./builds/dockerfiles/Dockerfile.owaspzap ./builds/dockerfiles 
+
+docker run -it -d --name owaspzap --network pipeline --ip 172.18.0.80 --restart unless-stopped -p 8080:8080 -v ./volumes/agent-data-owasp/:/root/ -v ./builds/configure/agent/ssh/sshd_config:/etc/ssh/sshd_config -v /var/run/docker.sock:/var/run/docker.sock owaspzap
+
+# 5. Trivy
+docker build -t trivy -f ./builds/dockerfiles/Dockerfile.trivy ./builds/dockerfiles
+
+docker run -it -d --name trivy -p 8070:8070 -p 22:22 -v ./volumes/agent-data-trivy:/root/ -v ./:/home/ubuntu/laboratorio/ -v ./volumes/trivy-reports:/home/ubuntu/trivy-reports -v ./builds/configure/agent/ssh/sshd_config:/etc/ssh/sshd_config --network pipeline --ip 172.18.0.70 --restart unless-stopped trivy

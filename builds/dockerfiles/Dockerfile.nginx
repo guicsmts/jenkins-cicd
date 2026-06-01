@@ -1,0 +1,40 @@
+# Etapa 2: NGINX
+FROM nginx
+
+# ARG DEBIAN_FRONTEND ignora interacoes no shell
+# apenas em casos que for necessário confirmacoes
+# ARG DEBIAN_FRONTEND=noninteractive
+
+# executando atualizacoes nginx
+RUN apt-get update && apt-get upgrade -y
+
+# instalando ferramentas para operacao
+RUN apt-get install -y \
+    python3 \
+    vim \
+    git \
+    curl \
+    vim \
+    sudo \
+    net-tools
+
+# diretorio home
+WORKDIR /home/ 
+ 
+# removendo arquivos default /var/www/
+RUN mkdir -p /var/www/public/
+
+# criando esquema de diretorio nginx
+RUN mkdir /etc/nginx/sites-available/ && >/etc/nginx/sites.local
+RUN mkdir /etc/nginx/sites-enabled/
+
+# criando links simbolicos para os virtuaishosts
+RUN ln -s /etc/nginx/sites-available/sites.local /etc/nginx/sites-enabled/sites.local
+
+# criacao dos certificados ssl
+RUN mkdir /etc/nginx/ssl
+
+# expondo porta para acesso ao nginx
+EXPOSE 80
+EXPOSE 443
+

@@ -1,0 +1,10 @@
+FROM mysql:8.0
+
+# Configuração segurança banco mysql
+# ENV MYSQL_ROOT_PASSWORD: 6bbf8192cfe6e7558b443888
+# ENV MYSQL_DATABASE: lemp/laravel
+# ENV MYSQL_USER: lempdb2cfe6e
+# ENV MYSQL_PASSWORD: lab-secret-me
+
+# expondo porta para acesso ao mysql
+EXPOSE 3306

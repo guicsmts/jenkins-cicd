@@ -1,0 +1,140 @@
+services:
+
+  php-fpm:
+    build:
+      dockerfile: Dockerfile.php
+      context: ./builds/dockerfiles
+    container_name: phpfpm
+    ports:
+      - "9001:9000"
+    depends_on:
+      - postgresql
+    networks:
+      lab-snet-01:
+        ipv4_address: "172.18.0.8"      
+
+  nginx:
+    build:
+      dockerfile: Dockerfile.nginx
+      context: ./builds/dockerfiles
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - postgresql  
+    networks:
+      lab-snet-01:
+        ipv4_address: "172.18.0.2" 
+
+  lemp-mysql:
+    build: 
+      dockerfile: Dockerfile.mysql
+      context: ./builds/dockerfiles
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 6bbf8192cfe6e7558b443888
+      MYSQL_DATABASE: lemp/laravel
+      MYSQL_USER: lempdb2cfe6e
+      MYSQL_PASSWORD: lab-secret-me
+    volumes:
+      - ./volumes/db-lemp:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    depends_on:
+      - postgresql
+    networks:
+      lab-snet-01:
+        ipv4_address: "172.18.0.13" 
+
+  jenkins:
+    build:
+      dockerfile: Dockerfile.jenkins
+      context: ./builds/dockerfiles
+    container_name: jenkins
+    volumes:
+      - ./volumes/jenkins-data:/var/jenkins_home:rw
+      - /var/run/docker.sock:/var/run/docker.sock  
+    ports:
+      - "8070:8080"
+    depends_on:
+      - postgresql   
+    networks:
+      lab-snet-01:
+        ipv4_address: "172.18.0.4" 
+
+  postgresql:
+    build:
+      dockerfile: Dockerfile.postgres
+      context: ./builds/dockerfiles
+    container_name: postgresql
+    environment:
+      - POSTGRES_DB=sonar
+      - POSTGRES_USER=sonar      
+      - POSTGRES_PASSWORD=sonar
+      - POSTGRES_ROOT_PASSWORD=Snar2024
+    volumes:
+      - ./volumes/db-sonar:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      lab-snet-01:
+        ipv4_address: "172.18.0.6" 
+
+  agent:
+    build:
+      dockerfile: Dockerfile.agent
+      context: ./builds/dockerfiles
+    container_name: agent
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "8000:80"
+      - "3222:22"
+    networks:
+      lab-snet-01:
+        ipv4_address: "172.18.0.60" 
+
+  trivy:
+    build:
+      dockerfile: Dockerfile.trivy
+      context: ./builds/dockerfiles
+    container_name: trivy
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./volumes/agent-data-trivy/:/root/
+      - ./:/home/ubuntu/laboratorio/
+      - ./volumes/trivy-reports/:/home/ubuntu/trivy-reports
+      - ./builds/configure/agent/ssh/sshd_config:/etc/ssh/sshd_config
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8090:8090"
+      - "22:22"
+    networks:
+      lab-snet-01:
+        ipv4_address: "172.18.0.70" 
+
+  owaspzap:
+    build:
+      dockerfile: Dockerfile.owaspzap
+      context: ./builds/dockerfiles
+    container_name: owaspzap
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./volumes/agent-data-owasp/:/root/
+      - ./builds/configure/agent/ssh/sshd_config:/etc/ssh/sshd_config
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 8080:8080
+    networks:
+      lab-snet-01:
+        ipv4_address: "172.18.0.80"
+
+networks:
+  lab-snet-01:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "172.18.0.0/16"

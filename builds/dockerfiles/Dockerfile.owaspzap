@@ -1,0 +1,57 @@
+# Use the stable version of ZAP as the base image
+FROM ghcr.io/zaproxy/zaproxy:stable
+
+# Define ponto de inicio para imagem
+WORKDIR /root/
+
+# Execute como root
+USER root
+
+# Atualizações e instalação de pacotes necessários
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+    vim \
+    curl \
+    adduser \
+    sudo \
+    python3 \
+    python3-pip \
+    python3-venv \
+    ssh \
+    net-tools \
+    git \
+    wget \
+    ca-certificates \
+    openssh-server \
+    lsb-release \
+    software-properties-common \
+    apt-transport-https \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Definindo variáveis de ambiente para Java
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+ENV PATH=$JAVA_HOME/bin:$PATH
+
+# Criando o diretório .ssh e gerando a chave SSH de forma automatizada
+RUN ssh-keygen -t rsa -b 4096 -f /root/.ssh/id_rsa -N "" 
+RUN chmod 600 /root/.ssh/id_rsa
+RUN chmod 644 /root/.ssh/id_rsa.pub
+
+# Configurações do SSH
+RUN mv /etc/ssh/sshd_config /etc/ssh/sshd_config.default
+RUN rm -f /root/.ssh/*
+
+# Set the working directory
+WORKDIR /zap
+
+# Expose necessary ports (e.g., 8080 for the ZAP UI)
+EXPOSE 8080
+
+# Set the entrypoint to the ZAP application
+ENTRYPOINT ["zap.sh"]
+
+
+# Line command Zap.sh
+# zap.sh -cmd -quickurl <target_url> -quickout ./relatorio_zap.html -config proxy.active=true -config proxy.port=8081
+# Optionally, you can define default arguments for ZAP
+CMD ["-daemon", "-port", "8080"]
