@@ -1,51 +1,196 @@
-# Projeto LEMP com Docker 🐳
+# Jenkins CI/CD
 
-Atenção:
-Este repositório contém a configuração para um ambiente LEMP usando Docker, facilitando a execução de uma pilha de desenvolvimento Linux, NGINX, MySQL e PHP em contêineres.
+Ambiente completo para integração contínua (CI) e entrega contínua (CD) utilizando Jenkins, Docker e automação de pipelines para aplicações web.
 
-## Requisitos 📋
+## Visão Geral
 
-Para executar este projeto, você precisará ter o Docker e o Docker Compose instalados em sua máquina.
+Este projeto disponibiliza uma plataforma Jenkins containerizada para automação de processos de desenvolvimento, testes, análise de qualidade e deploy. O objetivo é centralizar a execução de pipelines CI/CD, reduzindo atividades manuais e aumentando a confiabilidade das entregas.
 
-## Configuração do Ambiente 🛠️
+A estrutura foi organizada para permitir a configuração rápida de ambientes Jenkins, gerenciamento de jobs e integração com ferramentas de desenvolvimento modernas.
 
-O ambiente LEMP é composto por:
+## Recursos
 
-- **MySQL 5.7:** Banco de dados relacional.
-- **PHP 7.2-FPM:** Versão FastCGI do PHP.
-- **NGINX (latest):** Servidor web leve e de alto desempenho.
+* Jenkins executando em containers Docker
+* Pipelines as Code utilizando Jenkinsfile
+* Integração com GitHub
+* Integração com SonarQube
+* Ambientes isolados para builds
+* Configuração simplificada através do Docker Compose
+* Estrutura organizada para múltiplos projetos
+* Automação de processos de build e deploy
 
-## Inicialização do Projeto 🚀
+## Arquitetura
 
-Para iniciar o ambiente LEMP, siga estas etapas:
+O ambiente é composto pelos seguintes componentes:
 
-1. **Clone o Repositório:**
+* Jenkins Server
+* Docker Compose
+* Jenkins Pipelines
+* SonarQube Integration
+* Build Workspaces
+* Sites Configuration
 
-```bash
-   git clone <url_do_repositorio>
-   cd <nome_do_repositorio>
+## Estrutura do Projeto
+
+```text
+.
+├── builds/
+├── setup/
+├── sites/
+├── docker-compose.yml
+├── Jenkinsfile.lab
+├── sonar-project.properties
+├── README.md
+└── .gitignore
 ```
 
-2. **Construa e Inicie os Serviços:**
+## Requisitos
 
-Execute o comando abaixo para construir e iniciar os serviços em contêineres Docker:
+* Docker
+* Docker Compose
+* Git
+* Conta GitHub (opcional)
+* SonarQube (opcional)
+
+## Clone Repository
 
 ```bash
-   docker-compose up --build
+git clone https://github.com/<username>/jenkins-cicd.git
 
+cd jenkins-cicd
 ```
 
-Este comando fará o Docker Compose construir as imagens necessárias e iniciar os contêineres.
+## Start Environment
 
-# Acessando os Serviços 🌐
+```bash
+docker-compose up -d
+```
 
-Web Server: O NGINX estará acessível na porta 80. Você pode acessar seu aplicativo PHP navegando para http://localhost em seu navegador.
+## Check Running Containers
 
-Banco de Dados: O MySQL estará rodando na porta padrão (3306). Você pode acessá-lo usando suas ferramentas de gerenciamento de banco de dados preferidas.
+```bash
+docker ps
+```
 
-# Estrutura de Arquivos 📂
-Descreva aqui como o projeto está estruturado, incluindo onde os arquivos de configuração do Docker e os arquivos de aplicativos PHP estão localizados.
+## View Container Logs
 
-# Contribuições e Suporte 🤝
-Instruções sobre como contribuir para o projeto, reportar bugs e solicitar funcionalidades.
+```bash
+docker logs -f jenkins
+```
 
+## Access Jenkins
+
+```text
+http://localhost:8080
+```
+
+## Retrieve Initial Admin Password
+
+```bash
+docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+## Install Recommended Plugins
+
+After the first login:
+
+```text
+Manage Jenkins
+→ Plugins
+→ Install Suggested Plugins
+```
+
+## Configure GitHub Integration
+
+```text
+Manage Jenkins
+→ Credentials
+→ Add Credentials
+```
+
+Configure:
+
+* GitHub Token
+* SSH Key (optional)
+* Repository Access
+
+## Configure SonarQube
+
+```text
+Manage Jenkins
+→ System
+→ SonarQube Servers
+```
+
+Add:
+
+* Server URL
+* Authentication Token
+
+## Create Pipeline Job
+
+```text
+Dashboard
+→ New Item
+→ Pipeline
+→ Pipeline Script from SCM
+```
+
+Configure:
+
+```text
+SCM: Git
+Repository URL: <repository-url>
+Script Path: Jenkinsfile
+```
+
+## Run Pipeline
+
+```bash
+Build Now
+```
+
+## Example Pipeline Stages
+
+```text
+1. Checkout Source Code
+2. Dependency Installation
+3. Unit Tests
+4. Code Quality Analysis
+5. Build Application
+6. Publish Artifacts
+7. Deploy Environment
+```
+
+## Use Cases
+
+* Continuous Integration
+* Continuous Delivery
+* Continuous Deployment
+* Automated Testing
+* Static Code Analysis
+* Multi-Environment Deployments
+* DevOps Laboratories
+* Development Team Automation
+
+## Best Practices
+
+* Store secrets using Jenkins Credentials
+* Version control all Jenkinsfiles
+* Separate build and deployment stages
+* Automate quality gates with SonarQube
+* Use isolated Docker agents whenever possible
+* Implement approval stages for production deployments
+
+## Contribuição
+
+Contribuições, correções e melhorias são bem-vindas.
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Open a Pull Request
+
+## Licença
+
+Este projeto está disponível sob a licença definida pelo mantenedor do repositório.
