@@ -1,5 +1,6 @@
 # Projeto LEMP com Docker 🐳
 
+Atenção:
 Este repositório contém a configuração para um ambiente LEMP usando Docker, facilitando a execução de uma pilha de desenvolvimento Linux, NGINX, MySQL e PHP em contêineres.
 
 ## Requisitos 📋
